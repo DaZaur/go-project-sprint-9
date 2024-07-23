@@ -21,7 +21,7 @@ func Generator(ctx context.Context, ch chan<- int64, fn func(int64)) {
 		case <-ctx.Done():
 			return
 		default:
-			n += 1
+			n++
 			ch <- n
 			fn(n)
 		}
@@ -48,11 +48,14 @@ func main() {
 	// для проверки будем считать количество и сумму отправленных чисел
 	var inputSum int64   // сумма сгенерированных чисел
 	var inputCount int64 // количество сгенерированных чисел
+	var mu sync.Mutex
 
 	// генерируем числа, считая параллельно их количество и сумму
 	go Generator(ctx, chIn, func(i int64) {
+		mu.Lock()
 		inputSum += i
 		inputCount++
+		mu.Unlock()
 	})
 
 	const NumOut = 5 // количество обрабатывающих горутин и каналов
